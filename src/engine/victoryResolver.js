@@ -55,6 +55,10 @@ const reduceMoves = (moves, boardSize) =>{
 	return moves.reduce((previous, current) => movesReducer(previous, current, boardSize),{winner: null})
 }
 const resolver = (moves, boardSize) => {
+	if(moves.length < (boardSize * 2 - 1)){
+		return null
+	}
+	
 	return reduceMoves(moves, boardSize).winner
 }
 
