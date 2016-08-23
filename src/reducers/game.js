@@ -1,4 +1,5 @@
 import victoryResolver from '../engine/victoryResolver'
+import moveExecutor from '../engine/moveExecutor'
 
 const defaultState = {
   boardSize: 3,
@@ -28,10 +29,7 @@ const game = (state = defaultState, action) => {
           victory: action.winner
         })
      case 'MOVE':
-        const moves =  [
-                        ...state.moves,
-                        move(state.moves.length ? state.moves[state.moves.length - 1] : undefined, action)
-                      ]
+        const moves = moveExecutor(state.moves, move(state.moves.length ? state.moves[state.moves.length - 1] : undefined, action))
         return Object.assign({}, state, {
           moves: moves,
           victory: victoryResolver(moves, state.boardSize)
