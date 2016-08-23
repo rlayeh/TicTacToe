@@ -3,8 +3,9 @@ import 'babel-polyfill'
 import victoryResolver from '../../src/engine/victoryResolver'
 
 describe('victoryResolver', () => {
-  it('should exist', () => {
+  it('should exist and be a function', () => {
     expect(victoryResolver).toBeTruthy()
+    expect(typeof victoryResolver).toBe('function')
   })
 
   it('should return null for boardSize equal 0',()=>{

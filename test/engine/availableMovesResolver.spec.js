@@ -2,8 +2,9 @@ import expect from 'expect'
 import availableMovesResolver from '../../src/engine/availableMovesResolver'
 
 describe('availableMovesResolver', () => {
-  it('should exist', () => {
+  it('should exist and be a function', () => {
     expect(availableMovesResolver).toBeTruthy()
+    expect(typeof availableMovesResolver).toBe('function')
   })
 
   it('should work correctly for a 0 sized board', ()=>{
