@@ -316,4 +316,44 @@ describe('victoryResolver', () => {
 
     expect(victoryResolver(moves,3)).toBe(null)
   })
+
+  it('should work with a different board size', ()=>{
+    const moves = [{
+      x: 0,
+      y: 3,
+      type: 'cross'
+    },
+    {
+      x: 1,
+      y: 0,
+      type: 'circle'
+    },
+    {
+      x: 1,
+      y: 2,
+      type: 'cross'
+    },
+    {
+      x: 0,
+      y: 1,
+      type: 'circle'
+    },
+    {
+      x: 2,
+      y: 1,
+      type: 'cross'
+    },
+    {
+      x: 0,
+      y: 2,
+      type: 'circle'
+    },
+    {
+      x: 3,
+      y: 0,
+      type: 'cross'
+    }]
+
+    expect(victoryResolver(moves,4)).toBe('cross')
+  })
 })
