@@ -8,11 +8,7 @@ const getFieldsForRow = (rowIndex, boardSize, moves) => {
     return move.y == rowIndex
   })
 
-  let resultArray = []
-
-  for(var i=0;i<boardSize;i++){
-    resultArray.push(null)
-  }
+  let resultArray = [...Array(boardSize)]
 
   rowMoves.forEach((move)=>{
     resultArray[move.x] = move.type
