@@ -1,6 +1,7 @@
 import expect from 'expect'
 import 'babel-polyfill'
 import victoryResolver from '../../src/engine/victoryResolver'
+import figureType from '../../src/engine/figureType'
 
 describe('victoryResolver', () => {
   it('should exist and be a function', () => {
@@ -356,5 +357,55 @@ describe('victoryResolver', () => {
     }]
 
     expect(victoryResolver(moves,4)).toBe('cross')
+  })
+
+  it('should return draw', ()=>{
+    const moves = [{
+      x: 0,
+      y: 0,
+      type: 'circle'
+    },
+    {
+      x: 1,
+      y: 0,
+      type: 'cross'
+    },
+    {
+      x: 2,
+      y: 0,
+      type: 'circle'
+    },
+    {
+      x: 0,
+      y: 1,
+      type: 'cross'
+    },
+    {
+      x: 2,
+      y: 1,
+      type: 'circle'
+    },
+    {
+      x: 1,
+      y: 1,
+      type: 'cross'
+    },
+    {
+      x: 0,
+      y: 2,
+      type: 'circle'
+    },
+    {
+      x: 2,
+      y: 2,
+      type: 'cross'
+    },
+    {
+      x: 1,
+      y: 2,
+      type: 'circle'
+    }]
+
+    expect(victoryResolver(moves,3)).toBe(figureType.draw)
   })
 })
