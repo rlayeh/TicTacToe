@@ -65,21 +65,38 @@
 	
 	var _reducers2 = _interopRequireDefault(_reducers);
 	
-	var _Game = __webpack_require__(/*! ./containers/Game */ 487);
+	var _Game = __webpack_require__(/*! ./containers/Game */ 489);
 	
 	var _Game2 = _interopRequireDefault(_Game);
 	
-	var _actions = __webpack_require__(/*! ./actions */ 489);
+	var _actions = __webpack_require__(/*! ./actions */ 491);
+	
+	var _ticTacToeAiMove = __webpack_require__(/*! ./engine/ticTacToeAiMove */ 500);
+	
+	var _ticTacToeAiMove2 = _interopRequireDefault(_ticTacToeAiMove);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var store = (0, _redux.createStore)(_reducers2.default);
 	
+	var executeAiMove = function executeAiMove() {
+			var state = store.getState();
+			if (state.ai.players == 1) {
+					(0, _ticTacToeAiMove2.default)(state.game.moves, state.game.boardSize, state.ai.aiType, state.game.startingType, function (aiMove) {
+							return store.dispatch((0, _actions.move)(aiMove.x, aiMove.y));
+					});
+			}
+	};
+	
+	store.subscribe(executeAiMove);
+	
 	(0, _reactDom.render)(_react2.default.createElement(
-	  _reactRedux.Provider,
-	  { store: store },
-	  _react2.default.createElement(_Game2.default, null)
+			_reactRedux.Provider,
+			{ store: store },
+			_react2.default.createElement(_Game2.default, null)
 	), document.getElementById('main'));
+	
+	executeAiMove();
 
 /***/ },
 /* 1 */
@@ -30915,16 +30932,23 @@
 /*!****************************!*\
   !*** ./src/reducers/ai.js ***!
   \****************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
 	var defaultState = {
-	  players: 2,
-	  aiType: 'circle'
+	  players: 1,
+	  aiType: _figureType2.default.cross
 	};
 	
 	var ai = function ai() {
@@ -30960,27 +30984,21 @@
 	
 	var _victoryResolver2 = _interopRequireDefault(_victoryResolver);
 	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var _moveExecutor = __webpack_require__(/*! ../engine/moveExecutor */ 488);
 	
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	var _moveExecutor2 = _interopRequireDefault(_moveExecutor);
+	
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var defaultState = {
 	  boardSize: 3,
 	  victory: null,
-	  moves: []
-	};
-	
-	var move = function move(state, action) {
-	  switch (action.type) {
-	    case 'MOVE':
-	      return {
-	        type: state && state.type === 'circle' ? 'cross' : 'circle',
-	        x: action.x,
-	        y: action.y
-	      };
-	    default:
-	      return state;
-	  }
+	  moves: [],
+	  startingType: _figureType2.default.circle
 	};
 	
 	var game = function game() {
@@ -30995,7 +31013,7 @@
 	        victory: action.winner
 	      });
 	    case 'MOVE':
-	      var moves = [].concat(_toConsumableArray(state.moves), [move(state.moves.length ? state.moves[state.moves.length - 1] : undefined, action)]);
+	      var moves = (0, _moveExecutor2.default)(state.moves, action.x, action.y);
 	      return Object.assign({}, state, {
 	        moves: moves,
 	        victory: (0, _victoryResolver2.default)(moves, state.boardSize)
@@ -31013,7 +31031,7 @@
 /*!***************************************!*\
   !*** ./src/engine/victoryResolver.js ***!
   \***************************************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -31021,7 +31039,11 @@
 		value: true
 	});
 	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	var _figureType = __webpack_require__(/*! ./figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var getExtendedEntry = function getExtendedEntry(existingResult, newValue) {
 		return {
@@ -31042,46 +31064,119 @@
 	};
 	
 	var getDiagTopToBottomEntryValue = function getDiagTopToBottomEntryValue(existingResult, newValue) {
-		return newValue.x === newValue.y ? getEntryValue(existingResult, newValue) : Object.assign({}, existingResult);
+		return newValue.x === newValue.y ? getEntryValue(existingResult, newValue) : existingResult;
 	};
 	
 	var getDiagBottomToTopEntryValue = function getDiagBottomToTopEntryValue(existingResult, newValue, boardSize) {
-		return newValue.x === boardSize - 1 - newValue.y ? getEntryValue(existingResult, newValue) : Object.assign({}, existingResult);
+		return newValue.x === boardSize - 1 - newValue.y ? getEntryValue(existingResult, newValue) : existingResult;
 	};
 	
-	var extendResult = function extendResult(previousState, move, boardSize) {
-		var _Object$assign;
-	
-		return Object.assign({}, previousState, (_Object$assign = {}, _defineProperty(_Object$assign, 'row' + move.y, getEntryValue(previousState['row' + move.y], move)), _defineProperty(_Object$assign, 'col' + move.x, getEntryValue(previousState['col' + move.x], move)), _defineProperty(_Object$assign, 'diagTopBottom', getDiagTopToBottomEntryValue(previousState['diagTopBottom'], move)), _defineProperty(_Object$assign, 'diagBottomTop', getDiagBottomToTopEntryValue(previousState['diagBottomTop'], move, boardSize)), _Object$assign));
+	var didWon = function didWon(possibleWinningState, boardSize) {
+		return possibleWinningState && possibleWinningState.count === boardSize;
 	};
 	
-	var didWon = function didWon(state, property, boardSize) {
-		return state[property].count === boardSize ? state[property].type : null;
+	var getPossibleWins = function getPossibleWins(moves, boardSize) {
+		var possibleWinningStatesLength = boardSize * 2 + 2; //small optimization 
+	
+		return moves.reduce(function (possibleWinningStates, current) {
+			possibleWinningStates[current.y] = getEntryValue(possibleWinningStates[current.y], current);
+			possibleWinningStates[boardSize + current.x] = getEntryValue(possibleWinningStates[boardSize + current.x], current);
+			possibleWinningStates[possibleWinningStatesLength - 2] = getDiagTopToBottomEntryValue(possibleWinningStates[possibleWinningStatesLength - 2], current);
+			possibleWinningStates[possibleWinningStatesLength - 1] = getDiagBottomToTopEntryValue(possibleWinningStates[possibleWinningStatesLength - 1], current, boardSize);
+			return possibleWinningStates;
+		}, []);
 	};
 	
-	var extendWithWinner = function extendWithWinner(state, move, boardSize) {
-		return Object.assign({}, state, {
-			winner: state.winner || didWon(state, 'row' + move.y, boardSize) || didWon(state, 'col' + move.x, boardSize) || didWon(state, 'diagTopBottom', boardSize) || didWon(state, 'diagBottomTop', boardSize)
+	var getWinner = function getWinner(possibleWinningStates, boardSize) {
+		return possibleWinningStates.find(function (possibleWinningState) {
+			return didWon(possibleWinningState, boardSize);
 		});
 	};
 	
-	var movesReducer = function movesReducer(previous, current, boardSize) {
-		return extendWithWinner(extendResult(previous, current, boardSize), current, boardSize);
+	var getWinnerOrDraw = function getWinnerOrDraw(moves, boardSize, winner) {
+		if (!winner) {
+			return moves.length == boardSize * boardSize ? _figureType2.default.draw : null;
+		}
+		return winner.type;
 	};
 	
-	var reduceMoves = function reduceMoves(moves, boardSize) {
-		return moves.reduce(function (previous, current) {
-			return movesReducer(previous, current, boardSize);
-		}, { winner: null });
-	};
 	var resolver = function resolver(moves, boardSize) {
-		return reduceMoves(moves, boardSize).winner;
+		if (!boardSize) {
+			return null;
+		}
+	
+		if (moves.length < boardSize * 2 - 1) {
+			return null;
+		}
+	
+		return getWinnerOrDraw(moves, boardSize, getWinner(getPossibleWins(moves, boardSize), boardSize));
 	};
 	
 	exports.default = resolver;
 
 /***/ },
 /* 487 */
+/*!**********************************!*\
+  !*** ./src/engine/figureType.js ***!
+  \**********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = {
+		circle: 1,
+		cross: 2,
+		draw: 3
+	};
+
+/***/ },
+/* 488 */
+/*!************************************!*\
+  !*** ./src/engine/moveExecutor.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _figureType = __webpack_require__(/*! ./figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	var getNextMoveType = function getNextMoveType(moves) {
+		if (!moves.length) {
+			return _figureType2.default.circle;
+		}
+	
+		return moves[moves.length - 1].type === _figureType2.default.circle ? _figureType2.default.cross : _figureType2.default.circle;
+	};
+	
+	var createNewMove = function createNewMove(type, x, y) {
+		return {
+			x: x,
+			y: y,
+			type: type
+		};
+	};
+	
+	var executor = function executor(moves, x, y) {
+		return [].concat(_toConsumableArray(moves), [createNewMove(getNextMoveType(moves), x, y)]);
+	};
+	
+	exports.default = executor;
+
+/***/ },
+/* 489 */
 /*!********************************!*\
   !*** ./src/containers/Game.js ***!
   \********************************/
@@ -31099,21 +31194,21 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Board = __webpack_require__(/*! ./Board */ 488);
+	var _Board = __webpack_require__(/*! ./Board */ 490);
 	
 	var _Board2 = _interopRequireDefault(_Board);
 	
-	var _WinnerNotification = __webpack_require__(/*! ../components/WinnerNotification */ 494);
+	var _WinnerNotification = __webpack_require__(/*! ../components/WinnerNotification */ 496);
 	
 	var _WinnerNotification2 = _interopRequireDefault(_WinnerNotification);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 489);
+	var _actions = __webpack_require__(/*! ../actions */ 491);
 	
-	var _Reset = __webpack_require__(/*! ../components/Reset */ 495);
+	var _Reset = __webpack_require__(/*! ../components/Reset */ 497);
 	
 	var _Reset2 = _interopRequireDefault(_Reset);
 	
-	var _Controls = __webpack_require__(/*! ./Controls */ 496);
+	var _Controls = __webpack_require__(/*! ./Controls */ 498);
 	
 	var _Controls2 = _interopRequireDefault(_Controls);
 	
@@ -31147,7 +31242,7 @@
 	exports.default = Game;
 
 /***/ },
-/* 488 */
+/* 490 */
 /*!*********************************!*\
   !*** ./src/containers/Board.js ***!
   \*********************************/
@@ -31161,28 +31256,26 @@
 	
 	var _reactRedux = __webpack_require__(/*! react-redux */ 455);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 489);
+	var _actions = __webpack_require__(/*! ../actions */ 491);
 	
 	var _react = __webpack_require__(/*! react */ 298);
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _FieldsRow = __webpack_require__(/*! ../components/FieldsRow */ 490);
+	var _FieldsRow = __webpack_require__(/*! ../components/FieldsRow */ 492);
 	
 	var _FieldsRow2 = _interopRequireDefault(_FieldsRow);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	var getFieldsForRow = function getFieldsForRow(rowIndex, boardSize, moves) {
 	  var rowMoves = moves.filter(function (move) {
 	    return move.y == rowIndex;
 	  });
 	
-	  var resultArray = [];
-	
-	  for (var i = 0; i < boardSize; i++) {
-	    resultArray.push(null);
-	  }
+	  var resultArray = [].concat(_toConsumableArray(Array(boardSize)));
 	
 	  rowMoves.forEach(function (move) {
 	    resultArray[move.x] = move.type;
@@ -31232,7 +31325,7 @@
 	exports.default = Board;
 
 /***/ },
-/* 489 */
+/* 491 */
 /*!******************************!*\
   !*** ./src/actions/index.js ***!
   \******************************/
@@ -31272,7 +31365,7 @@
 	};
 
 /***/ },
-/* 490 */
+/* 492 */
 /*!*************************************!*\
   !*** ./src/components/FieldsRow.js ***!
   \*************************************/
@@ -31288,7 +31381,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Field = __webpack_require__(/*! ./Field */ 491);
+	var _Field = __webpack_require__(/*! ./Field */ 493);
 	
 	var _Field2 = _interopRequireDefault(_Field);
 	
@@ -31313,14 +31406,14 @@
 	};
 	
 	FieldsRow.propTypes = {
-	  fields: _react.PropTypes.arrayOf(_react.PropTypes.string).isRequired,
+	  fields: _react.PropTypes.arrayOf(_react.PropTypes.number).isRequired,
 	  onFieldClick: _react.PropTypes.func.isRequired
 	};
 	
 	exports.default = FieldsRow;
 
 /***/ },
-/* 491 */
+/* 493 */
 /*!*********************************!*\
   !*** ./src/components/Field.js ***!
   \*********************************/
@@ -31336,13 +31429,17 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Circle = __webpack_require__(/*! ./Circle */ 492);
+	var _Circle = __webpack_require__(/*! ./Circle */ 494);
 	
 	var _Circle2 = _interopRequireDefault(_Circle);
 	
-	var _Cross = __webpack_require__(/*! ./Cross */ 493);
+	var _Cross = __webpack_require__(/*! ./Cross */ 495);
 	
 	var _Cross2 = _interopRequireDefault(_Cross);
+	
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -31354,7 +31451,7 @@
 	    return _react2.default.createElement(
 	      'li',
 	      { className: 'cell' },
-	      type == 'circle' ? _react2.default.createElement(_Circle2.default, null) : _react2.default.createElement(_Cross2.default, null)
+	      type == _figureType2.default.circle ? _react2.default.createElement(_Circle2.default, null) : _react2.default.createElement(_Cross2.default, null)
 	    );
 	  }
 	
@@ -31362,14 +31459,14 @@
 	};
 	
 	Link.propTypes = {
-	  type: _react.PropTypes.string,
+	  type: _react.PropTypes.number,
 	  onClick: _react.PropTypes.func.isRequired
 	};
 	
 	exports.default = Link;
 
 /***/ },
-/* 492 */
+/* 494 */
 /*!**********************************!*\
   !*** ./src/components/Circle.js ***!
   \**********************************/
@@ -31398,7 +31495,7 @@
 	exports.default = Circle;
 
 /***/ },
-/* 493 */
+/* 495 */
 /*!*********************************!*\
   !*** ./src/components/Cross.js ***!
   \*********************************/
@@ -31427,7 +31524,7 @@
 	exports.default = Cross;
 
 /***/ },
-/* 494 */
+/* 496 */
 /*!**********************************************!*\
   !*** ./src/components/WinnerNotification.js ***!
   \**********************************************/
@@ -31443,15 +31540,25 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Reset = __webpack_require__(/*! ./Reset */ 495);
+	var _Reset = __webpack_require__(/*! ./Reset */ 497);
 	
 	var _Reset2 = _interopRequireDefault(_Reset);
+	
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var WinnerNotification = function WinnerNotification(_ref) {
 	  var winner = _ref.winner;
 	  var onReset = _ref.onReset;
+	
+	  var winnerLabel = "Its a draw!";
+	
+	  if (winner && winner !== _figureType2.default.draw) {
+	    winnerLabel = winner === _figureType2.default.circle ? 'O Won' : 'X Won';
+	  }
 	
 	  return _react2.default.createElement(
 	    'div',
@@ -31463,7 +31570,7 @@
 	      _react2.default.createElement(
 	        'div',
 	        { className: 'label' },
-	        winner && winner === 'circle' ? 'O Won' : 'X Won'
+	        winnerLabel
 	      ),
 	      _react2.default.createElement(_Reset2.default, { onClick: onReset })
 	    )
@@ -31471,14 +31578,14 @@
 	};
 	
 	WinnerNotification.propTypes = {
-	  winner: _react.PropTypes.string,
+	  winner: _react.PropTypes.number,
 	  onReset: _react.PropTypes.func.isRequired
 	};
 	
 	exports.default = WinnerNotification;
 
 /***/ },
-/* 495 */
+/* 497 */
 /*!*********************************!*\
   !*** ./src/components/Reset.js ***!
   \*********************************/
@@ -31513,7 +31620,7 @@
 	exports.default = Reset;
 
 /***/ },
-/* 496 */
+/* 498 */
 /*!************************************!*\
   !*** ./src/containers/Controls.js ***!
   \************************************/
@@ -31531,15 +31638,15 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Reset = __webpack_require__(/*! ../components/Reset */ 495);
+	var _Reset = __webpack_require__(/*! ../components/Reset */ 497);
 	
 	var _Reset2 = _interopRequireDefault(_Reset);
 	
-	var _NumberOfPlayers = __webpack_require__(/*! ../components/NumberOfPlayers */ 497);
+	var _NumberOfPlayers = __webpack_require__(/*! ../components/NumberOfPlayers */ 499);
 	
 	var _NumberOfPlayers2 = _interopRequireDefault(_NumberOfPlayers);
 	
-	var _actions = __webpack_require__(/*! ../actions */ 489);
+	var _actions = __webpack_require__(/*! ../actions */ 491);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -31569,7 +31676,7 @@
 	exports.default = Controls;
 
 /***/ },
-/* 497 */
+/* 499 */
 /*!*******************************************!*\
   !*** ./src/components/NumberOfPlayers.js ***!
   \*******************************************/
@@ -31623,6 +31730,222 @@
 	};
 	
 	exports.default = Reset;
+
+/***/ },
+/* 500 */
+/*!***************************************!*\
+  !*** ./src/engine/ticTacToeAiMove.js ***!
+  \***************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _minMax = __webpack_require__(/*! ../ai/minMax */ 501);
+	
+	var _minMax2 = _interopRequireDefault(_minMax);
+	
+	var _victoryResolver = __webpack_require__(/*! ./victoryResolver */ 486);
+	
+	var _victoryResolver2 = _interopRequireDefault(_victoryResolver);
+	
+	var _moveExecutor = __webpack_require__(/*! ./moveExecutor */ 488);
+	
+	var _moveExecutor2 = _interopRequireDefault(_moveExecutor);
+	
+	var _availableMovesResolver = __webpack_require__(/*! ./availableMovesResolver */ 503);
+	
+	var _availableMovesResolver2 = _interopRequireDefault(_availableMovesResolver);
+	
+	var _possibleWinStates = __webpack_require__(/*! ../ai/possibleWinStates */ 502);
+	
+	var _possibleWinStates2 = _interopRequireDefault(_possibleWinStates);
+	
+	var _figureType = __webpack_require__(/*! ./figureType */ 487);
+	
+	var _figureType2 = _interopRequireDefault(_figureType);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var getGameEndResolver = function getGameEndResolver(boardSize, aiFigureType) {
+		return function (moves) {
+			switch ((0, _victoryResolver2.default)(moves, boardSize)) {
+				case aiFigureType:
+					return _possibleWinStates2.default.ai;
+				case _figureType2.default.draw:
+					return _possibleWinStates2.default.draw;
+				case null:
+					return null;
+				default:
+					return _possibleWinStates2.default.player;
+			}
+		};
+	};
+	
+	var getAvailableMovesResolver = function getAvailableMovesResolver(boardSize) {
+		return function (moves) {
+			return (0, _availableMovesResolver2.default)(moves, boardSize);
+		};
+	};
+	
+	var getMoveExecutor = function getMoveExecutor() {
+		return function (moves, nextMove) {
+			return (0, _moveExecutor2.default)(moves, nextMove.x, nextMove.y);
+		};
+	};
+	
+	var getAiMove = function getAiMove(moves, boardSize, aiFigureType) {
+		return (0, _minMax2.default)(moves, getGameEndResolver(boardSize, aiFigureType), getAvailableMovesResolver(boardSize), getMoveExecutor());
+	};
+	
+	var ticTacToeAiMove = function ticTacToeAiMove(moves, boardSize, aiFigureType, startingType, performMove) {
+		if (moves.length && moves[moves.length - 1].type == aiFigureType || !moves.length && aiFigureType != startingType || moves.length == boardSize * boardSize) {
+			return;
+		}
+	
+		performMove(getAiMove(moves, boardSize, aiFigureType));
+	};
+	
+	exports.default = ticTacToeAiMove;
+
+/***/ },
+/* 501 */
+/*!**************************!*\
+  !*** ./src/ai/minMax.js ***!
+  \**************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _possibleWinStates = __webpack_require__(/*! ./possibleWinStates */ 502);
+	
+	var _possibleWinStates2 = _interopRequireDefault(_possibleWinStates);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var calculateNewValue = function calculateNewValue(previousValue, newValue, maximize) {
+		if (maximize) {
+			return newValue > previousValue ? newValue : previousValue;
+		}
+	
+		return newValue < previousValue ? newValue : previousValue;
+	};
+	
+	var reduceAvailableMoves = function reduceAvailableMoves(state, availableMovesResolver, maximize, continueFunc) {
+		return availableMovesResolver(state).reduce(continueFunc, maximize ? -1 : 1);
+	};
+	
+	var minMax = function minMax(state, maximize, gameStateResolver, availableMovesResolver, moveExecutor) {
+	
+		switch (gameStateResolver(state)) {
+			case _possibleWinStates2.default.draw:
+				return 0;
+			case _possibleWinStates2.default.ai:
+				return 1000;
+			case _possibleWinStates2.default.player:
+				return -1000;
+		}
+	
+		return reduceAvailableMoves(state, availableMovesResolver, maximize, function (previousValue, availableMove) {
+			return calculateNewValue(previousValue, minMax(moveExecutor(state, availableMove), !maximize, gameStateResolver, availableMovesResolver, moveExecutor), maximize);
+		});
+	};
+	
+	var sortByWinPossibility = function sortByWinPossibility(calculatedAvailableMoves) {
+		return calculatedAvailableMoves.sort(function (move1, move2) {
+			return move2.value > move1.value;
+		});
+	};
+	
+	var getAvailableMovesWithValues = function getAvailableMovesWithValues(state, gameStateResolver, availableMovesResolver, moveExecutor) {
+		return availableMovesResolver(state).map(function (availableMove) {
+			return {
+				move: availableMove,
+				value: minMax(moveExecutor(state, availableMove), true, gameStateResolver, availableMovesResolver, moveExecutor)
+			};
+		});
+	};
+	
+	var minMaxResolver = function minMaxResolver(gameState, gameStateResolver, availableMovesResolver, moveExecutor) {
+		return sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))[0].move;
+	};
+	exports.default = minMaxResolver;
+
+/***/ },
+/* 502 */
+/*!*************************************!*\
+  !*** ./src/ai/possibleWinStates.js ***!
+  \*************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = {
+		draw: 1,
+		ai: 2,
+		player: 3
+	};
+
+/***/ },
+/* 503 */
+/*!**********************************************!*\
+  !*** ./src/engine/availableMovesResolver.js ***!
+  \**********************************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	var getNotUsed = function getNotUsed(boardSize, indexInUse) {
+		//it is possible to use other methods like [...Array(size)].map/reduce
+		//but in this case 'for' function was around 50% faster
+	
+		var allMovesArray = [];
+		for (var i = 0; i < boardSize * boardSize; i++) {
+			if (!indexInUse(i)) {
+				allMovesArray.push({
+					x: i % boardSize,
+					y: Math.floor(i / boardSize)
+				});
+			}
+		}
+	
+		return allMovesArray;
+	};
+	
+	var getAlreadyUsedIndexes = function getAlreadyUsedIndexes(moves, boardSize) {
+		return moves.map(function (move) {
+			return move.y * boardSize + move.x;
+		});
+	};
+	
+	var indexUsed = function indexUsed(index, alreadyUsedIndexes) {
+		return alreadyUsedIndexes.indexOf(index) > -1;
+	};
+	
+	var getAvailableMoves = function getAvailableMoves(boardSize, alreadyUsedIndexes) {
+		return getNotUsed(boardSize, function (index) {
+			return indexUsed(index, alreadyUsedIndexes);
+		});
+	};
+	
+	var resolver = function resolver(moves, boardSize) {
+		return getAvailableMoves(boardSize, getAlreadyUsedIndexes(moves, boardSize));
+	};
+	
+	exports.default = resolver;
 
 /***/ }
 /******/ ]);
