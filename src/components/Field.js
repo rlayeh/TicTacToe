@@ -1,11 +1,12 @@
 import React, { PropTypes } from 'react'
 import Circle from './Circle'
 import Cross from './Cross'
+import figureType from '../engine/figureType'
 
 const Link = ({ type, onClick }) => {
   if (type) {
     return <li className="cell">
-            {type=='circle' ? <Circle /> : <Cross />}
+            {type==figureType.circle ? <Circle /> : <Cross />}
           </li>
   }
 
@@ -16,7 +17,7 @@ const Link = ({ type, onClick }) => {
 }
 
 Link.propTypes = {
-  type: PropTypes.string,
+  type: PropTypes.number,
   onClick: PropTypes.func.isRequired
 }
 

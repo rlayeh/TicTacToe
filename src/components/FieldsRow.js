@@ -14,7 +14,7 @@ const FieldsRow = ({ fields, onFieldClick }) => (
 )
 
 FieldsRow.propTypes = {
-  fields: PropTypes.arrayOf(PropTypes.string).isRequired,
+  fields: PropTypes.arrayOf(PropTypes.number).isRequired,
   onFieldClick: PropTypes.func.isRequired
 }
 

@@ -1,10 +1,12 @@
 import victoryResolver from '../engine/victoryResolver'
 import moveExecutor from '../engine/moveExecutor'
+import figureType from '../engine/figureType'
 
 const defaultState = {
   boardSize: 3,
   victory: null,
-  moves: []
+  moves: [],
+  startingType: figureType.circle
 }
 
 const game = (state = defaultState, action) => {

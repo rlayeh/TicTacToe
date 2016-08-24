@@ -1,5 +1,6 @@
 import expect from 'expect'
 import moveExecutor from '../../src/engine/moveExecutor'
+import figureType from '../../src/engine/figureType'
 
 describe('moveExecutor', () => {
   it('should exist and be a function', () => {
@@ -18,11 +19,11 @@ describe('moveExecutor', () => {
     const moves = [{
       x: 1,
       y: 1,
-      type: 'circle'
+      type: figureType.circle
     },{
       x: 0,
       y: 1,
-      type: 'cross'
+      type: figureType.cross
     }]
 
     const result = moveExecutor(moves,0, 0)
@@ -33,17 +34,17 @@ describe('moveExecutor', () => {
     const moves = [{
       x: 1,
       y: 1,
-      type: 'circle'
+      type: figureType.circle
     },{
       x: 0,
       y: 1,
-      type: 'cross'
+      type: figureType.cross
     }]
 
     const expected = {
       x: 2,
       y: 2,
-      type: 'circle'
+      type: figureType.circle
     }
 
     const result = moveExecutor(moves,2,2)

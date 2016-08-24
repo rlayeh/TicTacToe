@@ -1,6 +1,8 @@
+import figureType from '../engine/figureType'
+
 const defaultState = {
-  players: 2,
-  aiType: 'circle'
+  players: 1,
+  aiType: figureType.cross
 }
 
 const ai = (state = defaultState, action) => {
