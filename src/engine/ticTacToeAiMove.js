@@ -35,7 +35,8 @@ const getAiMove = (moves, boardSize, aiFigureType) => {
 const ticTacToeAiMove = (moves, boardSize, aiFigureType, startingType, performMove) => {
 	if((moves.length && moves[moves.length - 1].type == aiFigureType) || 
 	   (!moves.length && aiFigureType != startingType) ||
-	   (moves.length == boardSize*boardSize)){
+	   (moves.length == boardSize*boardSize) ||
+	   (victoryResolver(moves, boardSize))){
 		return
 	}
 
