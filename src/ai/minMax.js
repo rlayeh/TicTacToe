@@ -1,7 +1,7 @@
 import possibleWinStates from './possibleWinStates'
 
 const calculateNewValue = (previousValue, newValue, maximize) => {
-	if(!previousValue){
+	if(previousValue == null){
 		return newValue
 	}
 
@@ -28,6 +28,27 @@ const minMax = (state, depth, maximize, gameStateResolver, availableMovesResolve
 								 maximize)
 	}, null)
 }
+
+// const minMax = (state, depth, maximize, gameStateResolver, availableMovesResolver, moveExecutor) => {
+// 	switch(gameStateResolver(state)){
+// 		case possibleWinStates.draw:
+// 			return 0
+// 		case possibleWinStates.ai:
+// 			return 10000 - depth
+// 		case possibleWinStates.player:
+// 			return -10000 + depth
+// 	}
+
+// 	const possibleMoves = availableMovesResolver(state).map(move=>{
+// 		return minMax(moveExecutor(state, move), depth + 1, !maximize, gameStateResolver, availableMovesResolver, moveExecutor)
+// 	})
+
+// 	if(maximize){
+// 		return Math.max.apply(null, possibleMoves)
+// 	}
+// 	return Math.min.apply(null, possibleMoves)
+// }
+
 
 const sortByWinPossibility = (calculatedAvailableMoves) => {
 	return calculatedAvailableMoves.sort((move1, move2) => {
