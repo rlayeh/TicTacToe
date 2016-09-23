@@ -45,9 +45,7 @@ const getAvailableMovesWithValues = (state, gameStateResolver, availableMovesRes
 }
 
 const minMaxResolver = (gameState, gameStateResolver, availableMovesResolver, moveExecutor) =>{
-	const t = sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))
-	console.log(t)
-	return t[0].move
+	return sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))[0].move
 }
 export default minMaxResolver
 

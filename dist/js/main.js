@@ -31873,9 +31873,7 @@
 	};
 	
 	var minMaxResolver = function minMaxResolver(gameState, gameStateResolver, availableMovesResolver, moveExecutor) {
-		var t = sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor));
-		console.log(t);
-		return t[0].move;
+		return sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))[0].move;
 	};
 	exports.default = minMaxResolver;
 
