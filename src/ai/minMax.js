@@ -1,6 +1,10 @@
 import possibleWinStates from './possibleWinStates'
 
 const calculateNewValue = (previousValue, newValue, maximize) => {
+	if(!previousValue){
+		return newValue
+	}
+
 	if(maximize){
 		return newValue > previousValue ? newValue : previousValue
 	}
@@ -8,24 +12,21 @@ const calculateNewValue = (previousValue, newValue, maximize) => {
 	return newValue < previousValue ? newValue : previousValue
 }
 
-const reduceAvailableMoves = (state, availableMovesResolver, maximize, continueFunc) => {
-	return availableMovesResolver(state).reduce(continueFunc, maximize ? -1 : 1)
-}
-
-const minMax = (state, maximize, gameStateResolver, availableMovesResolver, moveExecutor) => {
-
+const minMax = (state, depth, maximize, gameStateResolver, availableMovesResolver, moveExecutor) => {
 	switch(gameStateResolver(state)){
 		case possibleWinStates.draw:
 			return 0
 		case possibleWinStates.ai:
-			return 1000
+			return 10000 - depth
 		case possibleWinStates.player:
-			return -1000
+			return -10000 + depth
 	}
 
-	return reduceAvailableMoves(state, availableMovesResolver, maximize, (previousValue, availableMove) => {
-		return calculateNewValue(previousValue, minMax(moveExecutor(state, availableMove), !maximize, gameStateResolver, availableMovesResolver, moveExecutor), maximize)
-	})
+	return availableMovesResolver(state).reduce((previousValue, availableMove) => {
+		return calculateNewValue(previousValue, 
+								 minMax(moveExecutor(state, availableMove), depth + 1, !maximize, gameStateResolver, availableMovesResolver, moveExecutor), 
+								 maximize)
+	}, null)
 }
 
 const sortByWinPossibility = (calculatedAvailableMoves) => {
@@ -38,14 +39,15 @@ const getAvailableMovesWithValues = (state, gameStateResolver, availableMovesRes
 	return availableMovesResolver(state).map(availableMove => {
 		return {
 			move: availableMove,
-			value: minMax(moveExecutor(state, availableMove), true, gameStateResolver, availableMovesResolver, moveExecutor)
+			value: minMax(moveExecutor(state, availableMove), 0, false, gameStateResolver, availableMovesResolver, moveExecutor)
 		}
 	})
 }
 
 const minMaxResolver = (gameState, gameStateResolver, availableMovesResolver, moveExecutor) =>{
-	return sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))[0].move
-
+	const t = sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))
+	console.log(t)
+	return t[0].move
 }
 export default minMaxResolver
 

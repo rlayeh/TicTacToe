@@ -30914,7 +30914,7 @@
 	
 	var _ai2 = _interopRequireDefault(_ai);
 	
-	var _game = __webpack_require__(/*! ./game */ 485);
+	var _game = __webpack_require__(/*! ./game */ 486);
 	
 	var _game2 = _interopRequireDefault(_game);
 	
@@ -30940,7 +30940,7 @@
 	  value: true
 	});
 	
-	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -30969,6 +30969,24 @@
 
 /***/ },
 /* 485 */
+/*!**********************************!*\
+  !*** ./src/engine/figureType.js ***!
+  \**********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = {
+		circle: 1,
+		cross: 2,
+		draw: 3
+	};
+
+/***/ },
+/* 486 */
 /*!******************************!*\
   !*** ./src/reducers/game.js ***!
   \******************************/
@@ -30980,7 +30998,7 @@
 	  value: true
 	});
 	
-	var _victoryResolver = __webpack_require__(/*! ../engine/victoryResolver */ 486);
+	var _victoryResolver = __webpack_require__(/*! ../engine/victoryResolver */ 487);
 	
 	var _victoryResolver2 = _interopRequireDefault(_victoryResolver);
 	
@@ -30988,7 +31006,7 @@
 	
 	var _moveExecutor2 = _interopRequireDefault(_moveExecutor);
 	
-	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -31027,7 +31045,7 @@
 	exports.default = game;
 
 /***/ },
-/* 486 */
+/* 487 */
 /*!***************************************!*\
   !*** ./src/engine/victoryResolver.js ***!
   \***************************************/
@@ -31039,7 +31057,7 @@
 		value: true
 	});
 	
-	var _figureType = __webpack_require__(/*! ./figureType */ 487);
+	var _figureType = __webpack_require__(/*! ./figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -31115,24 +31133,6 @@
 	exports.default = resolver;
 
 /***/ },
-/* 487 */
-/*!**********************************!*\
-  !*** ./src/engine/figureType.js ***!
-  \**********************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.default = {
-		circle: 1,
-		cross: 2,
-		draw: 3
-	};
-
-/***/ },
 /* 488 */
 /*!************************************!*\
   !*** ./src/engine/moveExecutor.js ***!
@@ -31145,7 +31145,7 @@
 		value: true
 	});
 	
-	var _figureType = __webpack_require__(/*! ./figureType */ 487);
+	var _figureType = __webpack_require__(/*! ./figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -31437,7 +31437,7 @@
 	
 	var _Cross2 = _interopRequireDefault(_Cross);
 	
-	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -31544,7 +31544,7 @@
 	
 	var _Reset2 = _interopRequireDefault(_Reset);
 	
-	var _figureType = __webpack_require__(/*! ../engine/figureType */ 487);
+	var _figureType = __webpack_require__(/*! ../engine/figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -31748,7 +31748,7 @@
 	
 	var _minMax2 = _interopRequireDefault(_minMax);
 	
-	var _victoryResolver = __webpack_require__(/*! ./victoryResolver */ 486);
+	var _victoryResolver = __webpack_require__(/*! ./victoryResolver */ 487);
 	
 	var _victoryResolver2 = _interopRequireDefault(_victoryResolver);
 	
@@ -31764,7 +31764,7 @@
 	
 	var _possibleWinStates2 = _interopRequireDefault(_possibleWinStates);
 	
-	var _figureType = __webpack_require__(/*! ./figureType */ 487);
+	var _figureType = __webpack_require__(/*! ./figureType */ 485);
 	
 	var _figureType2 = _interopRequireDefault(_figureType);
 	
@@ -31831,6 +31831,10 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var calculateNewValue = function calculateNewValue(previousValue, newValue, maximize) {
+		if (!previousValue) {
+			return newValue;
+		}
+	
 		if (maximize) {
 			return newValue > previousValue ? newValue : previousValue;
 		}
@@ -31838,24 +31842,19 @@
 		return newValue < previousValue ? newValue : previousValue;
 	};
 	
-	var reduceAvailableMoves = function reduceAvailableMoves(state, availableMovesResolver, maximize, continueFunc) {
-		return availableMovesResolver(state).reduce(continueFunc, maximize ? -1 : 1);
-	};
-	
-	var minMax = function minMax(state, maximize, gameStateResolver, availableMovesResolver, moveExecutor) {
-	
+	var minMax = function minMax(state, depth, maximize, gameStateResolver, availableMovesResolver, moveExecutor) {
 		switch (gameStateResolver(state)) {
 			case _possibleWinStates2.default.draw:
 				return 0;
 			case _possibleWinStates2.default.ai:
-				return 1000;
+				return 10000 - depth;
 			case _possibleWinStates2.default.player:
-				return -1000;
+				return -10000 + depth;
 		}
 	
-		return reduceAvailableMoves(state, availableMovesResolver, maximize, function (previousValue, availableMove) {
-			return calculateNewValue(previousValue, minMax(moveExecutor(state, availableMove), !maximize, gameStateResolver, availableMovesResolver, moveExecutor), maximize);
-		});
+		return availableMovesResolver(state).reduce(function (previousValue, availableMove) {
+			return calculateNewValue(previousValue, minMax(moveExecutor(state, availableMove), depth + 1, !maximize, gameStateResolver, availableMovesResolver, moveExecutor), maximize);
+		}, null);
 	};
 	
 	var sortByWinPossibility = function sortByWinPossibility(calculatedAvailableMoves) {
@@ -31868,13 +31867,15 @@
 		return availableMovesResolver(state).map(function (availableMove) {
 			return {
 				move: availableMove,
-				value: minMax(moveExecutor(state, availableMove), true, gameStateResolver, availableMovesResolver, moveExecutor)
+				value: minMax(moveExecutor(state, availableMove), 0, false, gameStateResolver, availableMovesResolver, moveExecutor)
 			};
 		});
 	};
 	
 	var minMaxResolver = function minMaxResolver(gameState, gameStateResolver, availableMovesResolver, moveExecutor) {
-		return sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor))[0].move;
+		var t = sortByWinPossibility(getAvailableMovesWithValues(gameState, gameStateResolver, availableMovesResolver, moveExecutor));
+		console.log(t);
+		return t[0].move;
 	};
 	exports.default = minMaxResolver;
 
